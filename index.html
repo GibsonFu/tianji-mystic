@@ -104,4 +104,4 @@ function render(){if(!person)return;result.replaceChildren();$("current-title").
 document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.mode;document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));render();$("analysis").scrollIntoView({behavior:"smooth"})}));
 $("profile").addEventListener("submit",e=>{e.preventDefault();const fresh=profile();if(!fresh){alert("請確認出生日期。");return}person=fresh;render()});
 person=profile();render();
-</script></body></html>
+</script><script src="fusion.js" defer></script></body></html>
