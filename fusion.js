@@ -80,6 +80,24 @@ make("h3","fusion-heading","完整逐年流年：從出生至89歲");
 
 const annual=make("div","fusion-years"),start=p.y;
 for(let y=start;y<=Math.min(p.y+89,2100);y++){let n=yearNumber(p,y),b=make("button","fusion-year"+(y===selectedYear?" current":""),undefined,annual);b.type="button";make("strong","",String(y),b);make("small","","個人年 "+n,b);make("span","",themes[n][0],b);b.addEventListener("click",()=>{selectedYear=y;show()})}
+
+const exportButton=make("button","btn","下載全部流年 CSV");
+exportButton.type="button";
+exportButton.style.marginTop="14px";
+exportButton.addEventListener("click",()=>{
+ const headers=["西元年","年齡約數","生命靈數","個人年","年度主題","人生階段","事業學業","財務資源","感情人際","健康生活","學習成長"];
+ const lines=[headers];
+ for(let y=p.y;y<=Math.min(p.y+89,2100);y++){
+  const n=yearNumber(p,y),phase=stages.find(st=>y-p.y>=st[0]&&y-p.y<=st[1])||stages.at(-1);
+  lines.push([y,y-p.y,p.number,n,themes[n][0],phase[2],...domainText[n]]);
+ }
+ const data=lines.map(row=>row.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\r\n");
+ const blob=new Blob(["\ufeff",data],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="天機玄府_完整人生流年_"+p.y+".csv";
+ document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
 make("h3","fusion-heading","七大命理的資料完整性");
 const statuses=[
 ["紫微斗數",p.lunar?"可依農曆月和時辰定位十二宮；十四主星、大限與流年未完成":"農曆換算不可用，尚未定位"],
