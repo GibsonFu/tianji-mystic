@@ -49,9 +49,37 @@ const age=selectedYear-p.y,stage=stages.find(x=>age>=x[0]&&age<=x[1])||stages.at
 card("當年人生階段 · 約 "+age+" 歲",stage[2]+"：可關注 "+stage[3]+"。此為一般人生議題，不是對個人經歷的預言。");
 make("h3","fusion-heading","從小到大的人生時間軸");
 const timeline=make("div","fusion-stages");stages.forEach(([a,b,title,focus])=>{let button=make("button","fusion-stage"+(age>=a&&age<=b?" current":""),undefined,timeline);button.type="button";make("b","",title+"｜"+a+"–"+b+" 歲",button);make("small","",(p.y+a)+"–"+(p.y+b)+" 年",button);make("span","",focus,button);button.addEventListener("click",()=>{selectedYear=p.y+a;show()})});
-make("h3","fusion-heading","逐年流年主題");
-const annual=make("div","fusion-years"),start=Math.max(p.y,Math.min(selectedYear-2,p.y+80));
-for(let y=start;y<=Math.min(start+9,p.y+89,2100);y++){let n=yearNumber(p,y),b=make("button","fusion-year"+(y===selectedYear?" current":""),undefined,annual);b.type="button";make("strong","",String(y),b);make("small","","個人年 "+n,b);make("span","",themes[n][0],b);b.addEventListener("click",()=>{selectedYear=y;show()})}
+
+const domainText={
+1:["設定新工作或學習目標，先採取小規模行動。","檢視新目標所需預算，避免衝動支出。","說明自己的需求與界線。","建立可長期維持的新習慣。","選擇一個值得開始的學習計畫。"],
+2:["加強團隊合作與協調。","檢視共同支出的安排。","練習傾聽及協商。","在社交與休息中取得平衡。","向夥伴或導師請教。"],
+3:["練習呈現成果、溝通與創意。","為興趣和社交設定支出界線。","主動分享感受。","規劃定期休閒與運動。","練習表達與創作技能。"],
+4:["整理工作流程，建立可靠的執行節奏。","建立預算及風險檢查清單。","重視穩定的承諾。","維持規律作息。","深化基本功與專業技能。"],
+5:["在風險可控下測試新方法。","對新機會進行風險評估。","尊重彼此空間與變化。","注意行程過密與睡眠。","跨領域探索。"],
+6:["檢視團隊與家庭的責任分配。","討論家庭支出及長期承諾。","兼顧他人與自己的需求。","安排照護者本身的休息。","練習管理與協作。"],
+7:["回顧工作方法並深入研究。","重新檢查資訊來源與資金規劃。","保留獨處時間且清楚溝通。","降低不必要的耗損。","系統性進修與閱讀。"],
+8:["追蹤成果、資源配置及專案成效。","使用可驗證數據檢視財務安排。","平衡成就與陪伴時間。","管理壓力及工作負荷。","培養領導、談判與評估能力。"],
+9:["完成未結事項，整理下一階段方向。","盤點長期財務承諾。","重新檢視相處方式。","留出調整生活節奏的空間。","整理成果及經驗傳承。"]
+};
+const detail=make("div","fusion-annual-detail");
+const drawAnnual=(year)=>{
+ const data=cross(p,year);
+ const phase=stages.find(x=>year-p.y>=x[0]&&year-p.y<=x[1])||stages.at(-1);
+ detail.replaceChildren();
+ const h=document.createElement("h3");h.textContent=year+" 年｜個人年 "+data.py+" · "+data.yearly[0];detail.append(h);
+ const intro=document.createElement("p");intro.className="fusion-sub";intro.textContent="約 "+(year-p.y)+" 歲｜"+phase[2]+"｜"+phase[3]+"。以下為傳統九年循環和人生階段結合的反思主題，不是對事件的預測。";detail.append(intro);
+ const grid=document.createElement("div");grid.className="fusion-domain-grid";detail.append(grid);
+ ["事業／學業","財務／資源","感情／人際","健康／生活","學習／成長"].forEach((title,i)=>{
+  const c=document.createElement("section");c.className="fusion-domain";grid.append(c);
+  const heading=document.createElement("strong");heading.textContent=title;c.append(heading);
+  const para=document.createElement("p");para.textContent=domainText[data.py][i];c.append(para);
+ });
+};
+drawAnnual(selectedYear);
+make("h3","fusion-heading","完整逐年流年：從出生至89歲");
+
+const annual=make("div","fusion-years"),start=p.y;
+for(let y=start;y<=Math.min(p.y+89,2100);y++){let n=yearNumber(p,y),b=make("button","fusion-year"+(y===selectedYear?" current":""),undefined,annual);b.type="button";make("strong","",String(y),b);make("small","","個人年 "+n,b);make("span","",themes[n][0],b);b.addEventListener("click",()=>{selectedYear=y;show()})}
 make("h3","fusion-heading","七大命理的資料完整性");
 const statuses=[
 ["紫微斗數",p.lunar?"可依農曆月和時辰定位十二宮；十四主星、大限與流年未完成":"農曆換算不可用，尚未定位"],
@@ -66,7 +94,7 @@ for(const [k,v] of statuses){const b=make("div","fusion-status");make("b","",k,b
 const warning=make("div","callout","本版已將可計算資訊統整成一份報告，但不是七套完整專業命盤。流年與生命階段只呈現傳統文化象徵及一般反思方向，不能當作未來發生事件、健康、財富、婚姻或升遷的可靠預測。");
 const copy=make("button","btn","複製分析摘要");copy.type="button";copy.addEventListener("click",async()=>{const text=["天機玄府綜合分析",p.date,p.sign,p.animal||"生肖未定","生命靈數 "+p.ln,selectedYear+" 年個人年 "+personal+"："+ct[0],stage[2]+"："+stage[3],warning.textContent].join("\n");try{await navigator.clipboard.writeText(text);copy.textContent="已複製"}catch{copy.textContent="複製功能受限"}});
 }
-const style=document.createElement("style");style.textContent='.fusion-sub{font-size:12px;line-height:1.8;color:#c7b9d5}.fusion-card{margin:13px 0;border:1px solid #baa07866;border-radius:12px;padding:13px;background:#10132b}.fusion-card h4,.fusion-heading{font:22px serif;color:#f1d29b;margin:14px 0 8px}.fusion-card p{line-height:1.85;color:#d5c9db;font-size:13px}.fusion-select{display:flex;gap:15px;align-items:center;margin:17px 0}.fusion-select label{margin:0}.fusion-select select{width:165px}.fusion-feature{text-align:center;border:1px solid #e4c38f;border-radius:15px;padding:17px;background:radial-gradient(circle at center,#453168,#10142d)}.fusion-feature h3,.fusion-feature h4{color:#f6d49f}.fusion-num{font:65px serif;color:#ffe2a2;text-shadow:0 0 25px #e4ae6d}.fusion-feature p{color:#e0d5e4;line-height:1.85}.fusion-stages{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.fusion-stage,.fusion-year{background:#12172e;border:1px solid #a18b9a9b;color:#e7dfef;border-radius:9px;padding:11px;text-align:left}.fusion-stage{display:flex;flex-direction:column;gap:4px}.fusion-stage b{color:#e9ca97}.fusion-stage small{font-size:10px;color:#bfb5cf}.fusion-stage span{font-size:12px}.fusion-stage.current,.fusion-year.current{border-color:#ffe0a2;background:#342b50}.fusion-years{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.fusion-year{text-align:center;display:grid;gap:4px;padding:9px 3px}.fusion-year strong{color:#f4d397}.fusion-year small{font-size:10px}.fusion-year span{font-size:11px}.fusion-status{display:grid;grid-template-columns:95px 1fr;gap:9px;border-bottom:1px solid #9c8cac55;padding:10px 0;font-size:12px}.fusion-status b{color:#f0cf95}.fusion-status span{color:#d0c4dd}@media(max-width:600px){.fusion-stages{grid-template-columns:1fr}.fusion-years{grid-template-columns:repeat(2,1fr)}}';document.head.append(style);
+const style=document.createElement("style");style.textContent='.fusion-sub{font-size:12px;line-height:1.8;color:#c7b9d5}.fusion-card{margin:13px 0;border:1px solid #baa07866;border-radius:12px;padding:13px;background:#10132b}.fusion-card h4,.fusion-heading{font:22px serif;color:#f1d29b;margin:14px 0 8px}.fusion-card p{line-height:1.85;color:#d5c9db;font-size:13px}.fusion-select{display:flex;gap:15px;align-items:center;margin:17px 0}.fusion-select label{margin:0}.fusion-select select{width:165px}.fusion-feature{text-align:center;border:1px solid #e4c38f;border-radius:15px;padding:17px;background:radial-gradient(circle at center,#453168,#10142d)}.fusion-feature h3,.fusion-feature h4{color:#f6d49f}.fusion-num{font:65px serif;color:#ffe2a2;text-shadow:0 0 25px #e4ae6d}.fusion-feature p{color:#e0d5e4;line-height:1.85}.fusion-stages{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.fusion-stage,.fusion-year{background:#12172e;border:1px solid #a18b9a9b;color:#e7dfef;border-radius:9px;padding:11px;text-align:left}.fusion-stage{display:flex;flex-direction:column;gap:4px}.fusion-stage b{color:#e9ca97}.fusion-stage small{font-size:10px;color:#bfb5cf}.fusion-stage span{font-size:12px}.fusion-stage.current,.fusion-year.current{border-color:#ffe0a2;background:#342b50}.fusion-years{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.fusion-year{text-align:center;display:grid;gap:4px;padding:9px 3px}.fusion-year strong{color:#f4d397}.fusion-year small{font-size:10px}.fusion-year span{font-size:11px}.fusion-status{display:grid;grid-template-columns:95px 1fr;gap:9px;border-bottom:1px solid #9c8cac55;padding:10px 0;font-size:12px}.fusion-status b{color:#f0cf95}.fusion-status span{color:#d0c4dd}@media(max-width:600px){.fusion-stages{grid-template-columns:1fr}.fusion-years{grid-template-columns:repeat(2,1fr)}}';style.textContent+=".fusion-annual-detail{border:1px solid #d2ae7b;border-radius:14px;padding:14px;margin:18px 0;background:#131630}.fusion-annual-detail h3{color:#f3d39b;font:23px serif}.fusion-domain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.fusion-domain{border:1px solid #a58aa36c;border-radius:9px;padding:12px;background:#0d1127}.fusion-domain strong{color:#f1d09a}.fusion-domain p{color:#d0c2da;font-size:12px;line-height:1.8}.fusion-years{max-height:440px;overflow-y:auto}.fusion-years button{min-height:68px}@media(max-width:600px){.fusion-domain-grid{grid-template-columns:1fr}}";document.head.append(style);
 const launch=document.createElement("button");launch.className="btn";launch.type="button";launch.textContent="✦ 一鍵生成七大智慧整合報告";launch.style.cssText="width:100%;margin-top:12px";form.after(launch);launch.addEventListener("click",()=>{enabled=true;show()});
 const link=document.createElement("button");link.className="btn";link.type="button";link.textContent="✦ 綜合流年與人生分析";link.style.cssText="display:block;margin:20px auto";$("module-list").after(link);link.addEventListener("click",()=>{enabled=true;show();$("analysis").scrollIntoView({behavior:"smooth"})});
 form.addEventListener("submit",()=>{if(enabled)setTimeout(show,0)});
